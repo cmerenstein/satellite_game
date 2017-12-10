@@ -7,7 +7,8 @@ from django.template import RequestContext
 
 # Create your views here.
 def game(request):
-	i = round(random.random()*19)
+	n_cities = len(City.objects.all())
+	i = round(random.random()*n_cities)
 	city = City.objects.get(pk=i)
 	
 	dict = {'zoom_1': city.name + '_zoom_1.PNG', 'zoom_3': city.name + '_zoom_3.PNG'}
