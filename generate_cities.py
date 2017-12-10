@@ -15,7 +15,7 @@ geolocator = Nominatim()
 image_folder = "satellite_pictures"
 
 cities = {}
-for picture in glob.glob(image_folder + "\*PNG"):
+for picture in glob.glob(image_folder + "/*PNG"):
 	base = (os.path.basename(picture))
 	city_name = base.split("_")[0]
 	try:
@@ -29,7 +29,7 @@ for city in cities.keys():
 	for pic in cities[city]:
 		new_name = str(i) + "_" + os.path.basename(pic).split("_", 1)[1]
 		print(new_name)
-		shutil.copy(pic, "satellite/static/" + new_name)
+		shutil.copy(pic, "static/" + new_name)
 	
 	city_location = geolocator.geocode(city)
 	
