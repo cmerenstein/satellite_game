@@ -206,7 +206,7 @@
 		if (missed <= 100) {
 			$("#miss").text("Well done, only " + missed + " km away in {{city_name}}.")
 		}
-		elif (missed <= 1000) {
+		else if (missed <= 1000) {
 			$("#miss").text("Eh, could be worse. You were " + missed + " km away in {{city_name}}.")
 		}
 		else {
