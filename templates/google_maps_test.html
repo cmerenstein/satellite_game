@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+   integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+   crossorigin=""/>
+   
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<style>
+ #satellite {
+   width: 80%;
+   height: 500px;
+   background-color: grey;
+ }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+	<nav class='navbar navbar-default navbar-static-top'>
+		<div class="container">
+			<ul class=" nav navbar-nav top">
+				<li class="nav-item" ><a class="navbar-brand" href="/game">Satellite Sam</a></li>
+				<li class="nav-item"><a class="nav-link" href=".">How to Play</a></li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="jumbotron" align="center">
+		<div id="satellite"></div>
+
+
+	</div>
+</div>
+
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
+<script>
+
+	var customStyle = [
+		  {
+			featureType: "all",
+			elementType: "labels",
+			stylers: [
+			  { visibility: "off" }
+			]
+		  }, 
+		  {
+			featureType: "administrative",
+			elementType: "geometry.stroke",
+			stylers: [
+				{ visibility: "off" }
+			]
+		  }, 
+		  {
+			featureType: "road",
+			elementType: "geometry.stroke",
+			stylers: [
+				{ visibility: "off" }
+			]
+		  }, 
+			  {
+			featureType: "water",
+			elementType: "geometry.stroke",
+			stylers: [
+				{ visibility: "off" }
+			]
+		  }, 
+	]
+
+	function initMap() {
+        var uluru = {lat: 39.955, lng: -75.160};
+        var map = new google.maps.Map(document.getElementById('satellite'), {
+          tilt:0,
+		  zoom: 12,
+		  minZoom: 12,
+          center: uluru,
+		  mapTypeId: 'satellite',
+		  streetViewControl: false,
+        });
+		map.set('styles', customStyle);
+      }
+</script>
+
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAoA2-xxOTU3nBswiIvVX4BnbaWRGBCLC8&callback=initMap">
+</script>
+
+
+</body>
+</html>
