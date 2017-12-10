@@ -25,7 +25,10 @@ SECRET_KEY = '(6kl5uq8bax!l%!^vno4ndpy8gu5-$e#=xf1qf60cx@w2d1y_4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+        "satellitesam.pythonanywhere.com",
+        "127.0.0.1:8000"
+        ]
 
 
 # Application definition
