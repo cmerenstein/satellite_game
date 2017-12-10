@@ -5,8 +5,9 @@ class City(models.Model):
 	name = models.CharField(max_length = 256)
 	lat = models.FloatField()
 	lng = models.FloatField()
-	city_name = models.CharField(max_length = 256)
-		
-	def open_set(self):
-		return self.space_set.filter(letter = " ")
+	id_num = models.IntegerField()
+	
+	
+	def __str__(self):
+		return str(self.name)
 
