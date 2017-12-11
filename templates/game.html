@@ -146,9 +146,30 @@
     g = svg.append("g");
 
 	map.on('click', function(e) {
-		$('#lat').val(Math.round(+e.latlng["lat"] * 100)/100);
-		$('#lng').val(Math.round(+e.latlng["lng"] * 100)/100);
+		$('#lat').val(Math.round(e.latlng["lat"] * 100)/100);
+		$('#lng').val(Math.round(e.latlng["lng"] * 100)/100);
 		console.log(e);
+		
+		g.selectAll('circle').remove()
+		
+		g.selectAll('circle')
+			.data([{'lat': e.latlng["lat"], 'lng': e.latlng["lng"]}])
+			.enter()
+			.append("circle")
+			.style("stroke", "#474747")
+			.style("fill", "red")
+			.attr("r", "4")
+			.attr("transform", 
+				function(d) {
+					console.log(d);
+					console.log(map.latLngToLayerPoint([d.lat, d.lng]))
+				  return "translate(" + 
+					map.latLngToLayerPoint([d.lat, d.lng]).x + ","+
+					map.latLngToLayerPoint([d.lat, d.lng]).y + ")";
+				  }
+				)
+				
+		
 	});	
 	
 	function distance(lat1, lon1, lat2, lon2, unit) {
@@ -176,7 +197,9 @@
 			{"type":"city", "lat":"{{city_lat}}", "lng":"{{city_lng}}"},
 			{"type":"guess", "lat":$('#lat')['0'].value, "lng":$('#lng')['0'].value}
 		]
-			
+		
+		g.selectAll('circle').remove()
+		
 		var dots = g.selectAll("circle")
 			.data(new_points)
 			.enter()
