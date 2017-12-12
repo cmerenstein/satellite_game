@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>Satellite Sam</title>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
@@ -57,12 +58,14 @@
 	</nav>
 
 	<div class="jumbotron" align="center">
-		<h4 id="miss"></h4>
-		<a id="tryagain" href="/games" hidden><button class="btn btn-default">Try Another</button></a>
+		<h4 id="miss">City 1 of 5</h4>
+		<h4 id="averagemiss" hidden></h4>
+		<div id="nextcity" hidden><button class="btn btn-default">Next City</button></div>
+		<a id="tryagain" href="/games" hidden><button class="btn btn-default">Play Again</button></a>
 		
 		<div id="satellite"></div>
 		<br>
-		<h4>Click on the map below to guess your location. Scroll down and hit "submit" to see how close you were.</h4>
+		<h4 id="instructions">Click on the map below to guess your location. Scroll down and hit "submit" to see how close you were.</h4>
 		<p id="map"></p>
 		
 		<form id="latlng">
@@ -81,7 +84,11 @@
 </script>
 
 <script>
-
+	console.log(JSON.parse( '{{ data | safe }} '))
+	var cities = JSON.parse( '{{ data | safe }} ')
+	var average_miss = 0
+	var q = 0
+	
 	/// GOOGLE MAPS SATELLITE WITHOUT LABELS
 	var customStyle = [
 		  {
@@ -114,8 +121,11 @@
 		  }, 
 	]
 
+	// MAKE SATELLITE MAP
 	function initMap() {
-        var uluru = {lat: {{city_lat}}, lng: {{city_lng}}};
+		var city = cities[q]
+		console.log(city)
+        var uluru = {lat: city.city_lat, lng: city.city_lng};
         var map = new google.maps.Map(document.getElementById('satellite'), {
           tilt:0,
 		  zoom: 12,
@@ -138,10 +148,8 @@
       maxZoom: 5,
       }).addTo(map);
           
-    /* Initialize the SVG layer */
     map._initPathRoot()    
-
-    /* We simply pick up the SVG from the map object */
+    
     var svg = d3.select("#map").select("svg"),
     g = svg.append("g");
 
@@ -172,6 +180,7 @@
 		
 	});	
 	
+	// DISTANCE FUNCTION
 	function distance(lat1, lon1, lat2, lon2, unit) {
 		var radlat1 = Math.PI * lat1/180
 		var radlat2 = Math.PI * lat2/180
@@ -186,15 +195,17 @@
 		return dist
 	}
 	
-	
+	// SUBMIT BUTTON
 	$("#submit").on('click', function() {
+		var city = cities[q]
 		$('#satellite').attr('hidden', true);
 		$('#latlng').attr('hidden', true);
-		$("#zoom").attr('hidden', true);
-		$("#tryagain").removeAttr('hidden');
+		$("#instructions").attr('hidden', true);
+		if (q == 4){ $("#tryagain").removeAttr('hidden');}
+		else { $("#nextcity").removeAttr('hidden'); }
 		
 		var new_points = [
-			{"type":"city", "lat":"{{city_lat}}", "lng":"{{city_lng}}"},
+			{"type":"city", "lat":city.city_lat, "lng":city.city_lng},
 			{"type":"guess", "lat":$('#lat')['0'].value, "lng":$('#lng')['0'].value}
 		]
 		
@@ -225,33 +236,56 @@
 				
 		var missed = distance(new_points[0].lat, new_points[0].lng, new_points[1].lat, new_points[1].lng, "K")
 		missed = Math.round(missed * 100) / 100
+		average_miss = (missed + average_miss * q) / (q + 1)
 		
 		if (missed <= 100) {
-			$("#miss").text("Well done, only " + missed + " km away in {{city_name}}.")
+			$("#miss").text("Well done, only " + missed + " km away in " + city.city_name + ".")
 		}
 		else if (missed <= 1000) {
-			$("#miss").text("Eh, could be worse. You were " + missed + " km away in {{city_name}}.")
+			$("#miss").text("Eh, Not bad. You were " + missed + " km away in " + city.city_name + ".")
 		}
 		else {
-			$("#miss").text("Not so close, you were " + missed + " km away in {{city_name}}.")
+			$("#miss").text("Not so close, you were " + missed + " km away in " + city.city_name + ".")
 		}
 		
-	// This moves dots on zoom
-	map.on("viewreset", function() {
-		console.log('zoom');
-		dots.attr("transform", 
-		function(d) {
-			console.log(d);
-			console.log(map.latLngToLayerPoint([d.lat, d.lng]))
-		  return "translate(" + 
-			map.latLngToLayerPoint([d.lat, d.lng]).x + ","+
-			map.latLngToLayerPoint([d.lat, d.lng]).y + ")";
-		  }
-		)
-      });
+		average_miss = Math.round(average_miss)
+		if (q == 4) {
+			$("#averagemiss").removeAttr('hidden')
+				.text("Game over! On average you were " + average_miss + " km from the target city.");
+		}
+		
+		// This moves dots on zoom
+		map.on("viewreset", function() {
+			console.log('zoom');
+			dots.attr("transform", 
+			function(d) {
+				console.log(d);
+				console.log(map.latLngToLayerPoint([d.lat, d.lng]))
+			  return "translate(" + 
+				map.latLngToLayerPoint([d.lat, d.lng]).x + ","+
+				map.latLngToLayerPoint([d.lat, d.lng]).y + ")";
+			  }
+			)
+		  });
 	  
 	  
 	 });
+
+	// Next City
+	$("#nextcity").on('click', function(){
+		q++;
+		var city = cities[q];
+		$('#satellite').removeAttr('hidden');
+		$('#latlng').removeAttr('hidden');
+		$("#instructions").removeAttr('hidden');
+		$("#nextcity").attr('hidden', true);
+		$("#miss").text("City " + (q + 1) + " of 5");
+		
+		initMap();
+		
+	});
+
+	
 </script>
 
 </body>
