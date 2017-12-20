@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
    integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
    crossorigin=""/>
-   
+
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <style>
@@ -21,20 +21,20 @@
     border-width: 1px;
     border-style: solid;
   }
-  
+
   input {
 	width: 100px;
 	text-align: center;
   }
-  
+
   img {
 	max-width: 800px;
   }
-  
+
   h2 {
 	text-align: left;
   }
-  
+
  #satellite {
    width: 80%;
    height: 500px;
@@ -60,14 +60,15 @@
 	<div class="jumbotron" align="center">
 		<h4 id="miss">City 1 of 5</h4>
 		<h4 id="averagemiss" hidden></h4>
+		<h4 id="globalaverage" hidden></h4>
 		<div id="nextcity" hidden><button class="btn btn-default">Next City</button></div>
 		<a id="tryagain" href="/games" hidden><button class="btn btn-default">Play Again</button></a>
-		
+
 		<div id="satellite"></div>
 		<br>
 		<h4 id="instructions">Click on the map below to guess your location. Scroll down and hit "submit" to see how close you were.</h4>
 		<p id="map"></p>
-		
+
 		<form id="latlng">
 		{% csrf_token %}
 			<input id="lat" name="lat" placeholder="Lat">
@@ -84,11 +85,30 @@
 </script>
 
 <script>
-	console.log(JSON.parse( '{{ data | safe }} '))
+    // using jQuery to get crsf token (code from django website)
+	function getCookie(name) {
+		var cookieValue = null;
+		if (document.cookie && document.cookie !== '') {
+			var cookies = document.cookie.split(';');
+			for (var i = 0; i < cookies.length; i++) {
+				var cookie = jQuery.trim(cookies[i]);
+				// Does this cookie string begin with the name we want?
+				if (cookie.substring(0, name.length + 1) === (name + '=')) {
+					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
+	var csrftoken = getCookie('csrftoken');
+
+
+//	console.log(JSON.parse( '{{ data | safe }} '))
 	var cities = JSON.parse( '{{ data | safe }} ')
 	var average_miss = 0
 	var q = 0
-	
+
 	/// GOOGLE MAPS SATELLITE WITHOUT LABELS
 	var customStyle = [
 		  {
@@ -97,34 +117,34 @@
 			stylers: [
 			  { visibility: "off" }
 			]
-		  }, 
+		  },
 		  {
 			featureType: "administrative",
 			elementType: "geometry.stroke",
 			stylers: [
 				{ visibility: "off" }
 			]
-		  }, 
+		  },
 		  {
 			featureType: "road",
 			elementType: "geometry.stroke",
 			stylers: [
 				{ visibility: "off" }
 			]
-		  }, 
+		  },
 			  {
 			featureType: "water",
 			elementType: "geometry.stroke",
 			stylers: [
 				{ visibility: "off" }
 			]
-		  }, 
+		  },
 	]
 
 	// MAKE SATELLITE MAP
 	function initMap() {
 		var city = cities[q]
-		console.log(city)
+	//	console.log(city)
         var uluru = {lat: city.city_lat, lng: city.city_lng};
         var map = new google.maps.Map(document.getElementById('satellite'), {
           tilt:0,
@@ -136,30 +156,30 @@
         });
 		map.set('styles', customStyle);
       }
-  
-  
+
+
   //// LEAFLET MAP FOR PICKING LOCATION
   var map = L.map('map').setView([30, 0], 2);
-  mapLink = 
+  mapLink =
       '<a href="http://openstreetmap.org">OpenStreetMap</a>';
   L.tileLayer(
       'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; ' + mapLink + ' Contributors',
       maxZoom: 5,
       }).addTo(map);
-          
-    map._initPathRoot()    
-    
+
+    map._initPathRoot()
+
     var svg = d3.select("#map").select("svg"),
     g = svg.append("g");
 
+    // DROPS DOT WHERE THE GUESS WAS CLICKED
 	map.on('click', function(e) {
 		$('#lat').val(Math.round(e.latlng["lat"] * 100)/100);
 		$('#lng').val(Math.round(e.latlng["lng"] * 100)/100);
 		console.log(e);
-		
+
 		g.selectAll('circle').remove()
-		
 		g.selectAll('circle')
 			.data([{'lat': e.latlng["lat"], 'lng': e.latlng["lng"]}])
 			.enter()
@@ -167,19 +187,19 @@
 			.style("stroke", "#474747")
 			.style("fill", "red")
 			.attr("r", "4")
-			.attr("transform", 
+			.attr("transform",
 				function(d) {
 					console.log(d);
 					console.log(map.latLngToLayerPoint([d.lat, d.lng]))
-				  return "translate(" + 
+				  return "translate(" +
 					map.latLngToLayerPoint([d.lat, d.lng]).x + ","+
 					map.latLngToLayerPoint([d.lat, d.lng]).y + ")";
 				  }
 				)
-				
-		
-	});	
-	
+
+
+	});
+
 	// DISTANCE FUNCTION
 	function distance(lat1, lon1, lat2, lon2, unit) {
 		var radlat1 = Math.PI * lat1/180
@@ -194,7 +214,7 @@
 		if (unit=="N") { dist = dist * 0.8684 }
 		return dist
 	}
-	
+
 	// SUBMIT BUTTON
 	$("#submit").on('click', function() {
 		var city = cities[q]
@@ -203,14 +223,15 @@
 		$("#instructions").attr('hidden', true);
 		if (q == 4){ $("#tryagain").removeAttr('hidden');}
 		else { $("#nextcity").removeAttr('hidden'); }
-		
+
 		var new_points = [
 			{"type":"city", "lat":city.city_lat, "lng":city.city_lng},
 			{"type":"guess", "lat":$('#lat')['0'].value, "lng":$('#lng')['0'].value}
 		]
-		
+
+
+        // DRAW DOTS FOR GUESS AND TARGET CITY
 		g.selectAll('circle').remove()
-		
 		var dots = g.selectAll("circle")
 			.data(new_points)
 			.enter()
@@ -224,20 +245,21 @@
 					return "red";
 				}})
 			.attr("r", "4")
-			.attr("transform", 
+			.attr("transform",
 				function(d) {
 					console.log(d);
 					console.log(map.latLngToLayerPoint([d.lat, d.lng]))
-				  return "translate(" + 
+				  return "translate(" +
 					map.latLngToLayerPoint([d.lat, d.lng]).x + ","+
 					map.latLngToLayerPoint([d.lat, d.lng]).y + ")";
 				  }
 				)
-				
+
+        // CALCULATE HOW FAR OFF THE GUESS WAS
 		var missed = distance(new_points[0].lat, new_points[0].lng, new_points[1].lat, new_points[1].lng, "K")
 		missed = Math.round(missed * 100) / 100
 		average_miss = (missed + average_miss * q) / (q + 1)
-		
+
 		if (missed <= 100) {
 			$("#miss").text("Well done, only " + missed + " km away in " + city.city_name + ".")
 		}
@@ -247,31 +269,41 @@
 		else {
 			$("#miss").text("Not so close, you were " + missed + " km away in " + city.city_name + ".")
 		}
-		
+
 		average_miss = Math.round(average_miss)
+
+		// WHEN FINISHED WITH ALL 5 CITIES, SHOW AVERAGE AND GLOBAL AVERAGE MISS
 		if (q == 4) {
 			$("#averagemiss").removeAttr('hidden')
 				.text("Game over! On average you were " + average_miss + " km from the target city.");
+
+            $.post("/game", {"csrfmiddlewaretoken":csrftoken, average_miss: average_miss},
+            function (data, status) {
+                $("#globalaverage").removeAttr('hidden')
+                    .text("The average distance missed across all games is " + Math.round(+data) + " km.");
+
+            });
+
 		}
-		
-		// This moves dots on zoom
+
+		// THIS JUST CORRECTS WHERE THE DOTS ARE WHEN ZOOMING THE MAP
 		map.on("viewreset", function() {
 			console.log('zoom');
-			dots.attr("transform", 
+			dots.attr("transform",
 			function(d) {
 				console.log(d);
 				console.log(map.latLngToLayerPoint([d.lat, d.lng]))
-			  return "translate(" + 
+			  return "translate(" +
 				map.latLngToLayerPoint([d.lat, d.lng]).x + ","+
 				map.latLngToLayerPoint([d.lat, d.lng]).y + ")";
 			  }
 			)
 		  });
-	  
-	  
+
+
 	 });
 
-	// Next City
+	// NEXT CITY BUTTON
 	$("#nextcity").on('click', function(){
 		q++;
 		var city = cities[q];
@@ -279,13 +311,14 @@
 		$('#latlng').removeAttr('hidden');
 		$("#instructions").removeAttr('hidden');
 		$("#nextcity").attr('hidden', true);
+		$("#globalaverage").attr('hidden', true);
 		$("#miss").text("City " + (q + 1) + " of 5");
-		
+
 		initMap();
-		
+
 	});
 
-	
+
 </script>
 
 </body>

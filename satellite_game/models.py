@@ -6,8 +6,10 @@ class City(models.Model):
 	lat = models.FloatField()
 	lng = models.FloatField()
 	id_num = models.IntegerField()
-	
-	
+
+
 	def __str__(self):
 		return str(self.name)
 
+class Game(models.Model):
+    average_miss = models.FloatField()
