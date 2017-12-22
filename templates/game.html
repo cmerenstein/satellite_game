@@ -12,6 +12,10 @@
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <style>
+  .navbar li{
+	float: left;
+  }
+
   #map {
 
     max-width: 800px;
@@ -25,10 +29,6 @@
   input {
 	width: 100px;
 	text-align: center;
-  }
-
-  img {
-	max-width: 800px;
   }
 
   h2 {
@@ -51,12 +51,13 @@
 	<nav class='navbar navbar-default navbar-static-top'>
 		<div class="container">
 			<ul class=" nav navbar-nav top">
-				<li class="nav-item" ><a class="navbar-brand" href="/game">Satellite Sam</a></li>
-				<li class="nav-item"><a class="nav-link" href=".">How to Play</a></li>
+				<li><a class="navbar-brand" href="/game">Satellite Sam</a></li>
+				<li><a href=".">How to Play</a></li>
+				<li><a  href="https://github.com/cmerenstein/satellite_game">Source</a></li>
 			</ul>
 		</div>
 	</nav>
-
+	
 	<div class="jumbotron" align="center">
 		<h4 id="miss">City 1 of 5</h4>
 		<h4 id="averagemiss" hidden></h4>
